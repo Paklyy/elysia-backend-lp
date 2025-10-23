@@ -4,14 +4,21 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-	  "biome:check": "bunx --bun biome check --write --unsafe src/"
+    "biome:check": "bunx --bun biome check --write --unsafe src/"
   },
   "dependencies": {
-    "elysia": "latest"
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.6",
+    "elysia": "latest",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.7",
-    "bun-types": "latest"
+    "@types/pg": "^8.15.5",
+    "bun-types": "latest",
+    "drizzle-kit": "^0.31.5",
+    "tsx": "^4.20.6"
   },
   "module": "src/index.js"
 }
