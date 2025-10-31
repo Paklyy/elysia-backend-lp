@@ -1,14 +1,54 @@
-services:
-  postgres:
-    image: bitnami/postgresql:latest
-    ports:
-      - '5432:5432'
-    environment:
-      - POSTGRES_USER=docker
-      - POSTGRES_PASSWORD=docker
-      - POSTGRES_DB=pakly
-    volumes:
-      - postgres_data:/bitnami/postgresql
+# ============================================
+# Docker Compose para Elysia Backend
+# ============================================
+# Configuração para desenvolvimento e produção
+# Compatível com Coolify e outros PaaS baseados em Docker
+# ============================================
 
-volumes:
-  postgres_data:
+version: '3.8'
+
+services:
+  # ============================================
+  # Backend Elysia
+  # ============================================
+  backend:
+    # Opção 1: Build local (use esta para desenvolvimento)
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime  # Usa o stage de runtime
+    # Opção 2: Imagem pré-construída (use esta no Coolify após build)
+    # image: elysia-lp-pakly:latest
+    # Para usar imagem do registry: image: your-registry/elysia-lp-pakly:latest
+    
+    container_name: elysia-backend
+    
+    # Mapeia porta do container para o host
+    # Formato: "host:container" - ajuste conforme necessário
+    ports:
+      - "3333:3333"
+      # Alternativa para compatibilidade: "${PORT:-3333}:3333"
+    
+    # Variáveis de ambiente
+    # IMPORTANTE: No Coolify, configure estas variáveis via UI ou env file
+    environment:
+      - NODE_ENV=production
+      - PORT=3333
+      # URL do Banco de dados (defina via Coolify UI ou secrets)
+      - DATABASE_URL=${DATABASE_URL:-}
+      # API Key do Resend (defina via Coolify UI ou secrets)
+      - RESEND_API_KEY=${RESEND_API_KEY:-your-resend-api-key}
+      # Email do Remetente (defina via Coolify UI ou secrets)
+      - RESEND_EMAIL=${RESEND_EMAIL:-noreply@example.com}
+    
+    # Health check do Docker Compose
+    # Verifica o endpoint /hello (ajuste conforme sua rota de health check)
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3333/hello"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Reinicia automaticamente em caso de falha
+    restart: unless-stopped
