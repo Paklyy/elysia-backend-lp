@@ -19,9 +19,14 @@ COPY . .
 # Stage 3: Produção
 FROM base AS production
 
-# Cria usuário não-root para segurança
-RUN addgroup --system --gid 1001 bun && \
-    adduser --system --uid 1001 bun
+# Verifica se o usuário bun já existe na imagem base
+# Se não existir, cria um novo usuário usando o grupo existente ou criando um novo
+RUN if ! id -u bun >/dev/null 2>&1; then \
+        if ! getent group bun >/dev/null 2>&1; then \
+            addgroup --system bun; \
+        fi; \
+        adduser --system --no-create-home --ingroup bun bun; \
+    fi
 
 # Copia apenas arquivos necessários para produção
 COPY --from=deps /app/node_modules ./node_modules
@@ -31,8 +36,10 @@ COPY drizzle ./drizzle
 COPY drizzle.config.ts ./
 COPY tsconfig.json ./
 
-# Altera ownership para o usuário bun
-RUN chown -R bun:bun /app
+# Altera ownership para o usuário bun (usando o usuário existente ou recém-criado)
+RUN if id -u bun >/dev/null 2>&1; then \
+        chown -R bun:bun /app || chown -R bun:$(id -gn bun) /app; \
+    fi
 
 # Muda para usuário não-root
 USER bun
