@@ -5,10 +5,9 @@ WORKDIR /app
 
 # --- Install Stage ---
 # This stage installs ALL dependencies, including devDependencies.
-# We might use this stage in the future if you add a build step (e.g., transpiling TS to JS).
 FROM base AS install
 WORKDIR /app
-# Copy only the package files
+# Copy only the package files (using your bun.lock fix)
 COPY package.json bun.lock ./
 # Install all dependencies based on the lockfile
 RUN bun install --frozen-lockfile
@@ -23,9 +22,9 @@ ENV NODE_ENV=production
 # Set a default port. Coolify will override this with its own PORT variable.
 ENV PORT=3333
 
-# Create a dedicated, non-root user and group for security
-RUN addgroup --system --gid 1001 bun && \
-    adduser --system --uid 1001 bun
+# --- USER CREATION LINES REMOVED ---
+# The 'oven/bun:1-slim' image already provides a 'bun' user.
+# We will use that one directly.
 
 # Copy ONLY the necessary files to install production dependencies
 COPY package.json bun.lock ./
@@ -40,10 +39,10 @@ COPY drizzle ./drizzle
 COPY drizzle.config.ts ./
 COPY tsconfig.json ./
 
-# Change ownership of the entire /app directory to the non-root user
+# Change ownership to the *existing* bun user
 RUN chown -R bun:bun /app
 
-# Switch to the non-root user
+# Switch to the *existing* non-root user
 USER bun
 
 # Expose the port the app will run on
