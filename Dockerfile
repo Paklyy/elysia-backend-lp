@@ -9,7 +9,7 @@ WORKDIR /app
 FROM base AS install
 WORKDIR /app
 # Copy only the package files
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 # Install all dependencies based on the lockfile
 RUN bun install --frozen-lockfile
 
@@ -28,7 +28,7 @@ RUN addgroup --system --gid 1001 bun && \
     adduser --system --uid 1001 bun
 
 # Copy ONLY the necessary files to install production dependencies
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 
 # Install ONLY production dependencies. This makes the image much smaller.
 RUN bun install --production --frozen-lockfile
